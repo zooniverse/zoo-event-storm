@@ -4,7 +4,7 @@
 
 (defn kafka-spout
   [zk-host topic & [client-id]]
-  (let [brokers (ZKHosts zk-host)
-        kafka-config (SpoutConfig brokers topic client-id)]
+  (let [brokers (ZkHosts. zk-host)
+        kafka-config (SpoutConfig. brokers topic client-id)]
     (set! (. kafka-config scheme) (SchemeAsMultiScheme.))
     (KafkaSpout. kafka-config)))

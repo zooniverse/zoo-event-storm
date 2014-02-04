@@ -3,6 +3,7 @@
             [zoo-storm.bolts.parse-json :refer [parse-json]]
             [zoo-storm.bolts.gendercode :refer [gendercode-event code-name init-data]]
             [zoo-storm.bolts.geocode :refer [geocoder geocode-event]]
+            [zoo-storm.bolts.kafka :refer [kafka-producer]]
             [backtype.storm [clojure :refer [topology spout-spec bolt-spec]] [config :refer :all]])
   (:import [backtype.storm LocalCluster])
   (:gen-class))
@@ -16,7 +17,9 @@
    "geocode" (bolt-spec {"parse-json" :shuffle}
                         geocode-event :p 2)
    "gendercode" (bolt-spec {"geocode" :shuffle}
-                           gendercode-event :p 2)})
+                           gendercode-event :p 2)
+   "write-to-kafka" (bolt-spec {"gendercode" :shuffle}
+                               kafka-producer :p 2)})
 
 (def event-topology
   (topology

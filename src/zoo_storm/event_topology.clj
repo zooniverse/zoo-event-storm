@@ -1,5 +1,6 @@
 (ns zoo-storm.event-topology
   (:require [zoo-storm.spouts.kafka :refer kafka-spout]
+            [zoo-storm.bolts.geocode :refer [geocoder geocode-event]]
     [backtype.storm [clojure :refer [topology spout-spec bolt-spec]] [config :refer :all]])
   (:import [backtype.storm LocalCluster]))
 
@@ -8,12 +9,12 @@
 
 (def topology-bolts
   {"geocode" (bolt-spec {["classifications-spout"] :shuffle}
-                        geocode-event :p 2)
+                        (geocode-event geocoder) :p 2)
    "gendercode" (bolt-spec {["geocode"] :shuffle}
                           gendercode-event :p 2)
    "to-http-stream" (bolt-spec {["gendercode"] :shuffle}
                                to-http-stream :p 2)
-   "to-database" (bolt-spec {["genderscoe"] :shuffle}
+   "to-database" (bolt-spec {["gendercode"] :shuffle}
                             to-database)})
 
 (def event-topology

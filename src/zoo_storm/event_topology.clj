@@ -9,7 +9,7 @@
 
 (def topology-bolts
   {"geocode" (bolt-spec {["classifications-spout"] :shuffle}
-                        (geocode-event geocoder) :p 2)
+                        (geocode-event (geocoder)) :p 2)
    "gendercode" (bolt-spec {["geocode"] :shuffle}
                           gendercode-event :p 2)
    "to-http-stream" (bolt-spec {["gendercode"] :shuffle}
@@ -18,7 +18,7 @@
                             to-database)})
 
 (def event-topology
-  (topology
+ code  (topology
     topology-spouts
     topology-bolts))
 

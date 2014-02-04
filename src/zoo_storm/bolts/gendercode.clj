@@ -1,14 +1,12 @@
 (ns zoo-storm.bolts.gendercode
-  (:require [backtype.storm.clojure :refer [emit-bolt! ack! defbolt]]
+  (:require [backtype.storm.clojure :refer [bolt emit-bolt! ack! defbolt]]
             [clojure.string :as str]
-            [clojure.java.io :refer :all]))
+            [clojure.java.io :refer :all])
+  (:gen-class))
 
 (defn open-file
   [file]
-  (-> file 
-      resource 
-      .toURI 
-      reader))
+  (-> file resource .toURI reader))
 
 (defn process-data
   [prefix]
@@ -44,3 +42,13 @@
       {:assigned "u"
        :male -1
        :female -1})))
+
+(defbolt gendercode-event ["event"] {:prepare true}
+  [conf context collector]
+  (let [gender-fn (partial code-name (init-data))] 
+    (bolt
+      (execute [tuple] 
+               (let [event (tuple "event")
+                     new-tuple (assoc event :gender (gender-fn (:name event)))]
+                 (emit-bolt! collector [new-tuple] :anchor tuple)
+                 (ack! collector tuple))))))

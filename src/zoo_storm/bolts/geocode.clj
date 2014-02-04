@@ -1,7 +1,8 @@
 (ns zoo-storm.bolts.geocode
-  (require [clj-http.client :as c]
-           [clj-geoip.core :refer [geoip-init lookup]]
-           [backtype.storm.clojure :refer [defbolt emit-bolt! ack!]]))
+  (require [clj-geoip.core :refer [geoip-init lookup]]
+           [clojure.tools.logging :as log]
+           [backtype.storm.clojure :refer [defbolt bolt emit-bolt! ack!]])
+  (:gen-class))
 
 (defn geocoder
   []
@@ -9,10 +10,15 @@
   (fn [ip]
     (lookup ip)))
 
-(defbolt geocode-event ["event"] {:params [geo-fn]} [tuple collector]
-  (let [location (geo-fn (:ip tuple))
-        tuple (assoc tuple :location {:country_name (:countryName location)
-                                      :country_code (:countryCode location)
-                                      :city (:city location)})]
-    (emit-bolt! collector tuple :anchor tuple)
-    (ack! collector tuple)))
+(defbolt geocode-event ["event"] {:prepare true} 
+  [conf context collector]
+  (let [geo-fn (geocoder)] 
+    (bolt
+      (execute [tuple]
+               (let [event (tuple "event")
+                     location (geo-fn (:ip event))
+                     new-tuple (assoc event :location {:country_name (:countryName location)
+                                                       :country_code (:countryCode location)
+                                                       :city (:city location)})]
+                 (emit-bolt! collector [new-tuple] :anchor tuple)
+                 (ack! collector tuple))))))

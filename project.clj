@@ -10,6 +10,7 @@
                              [storm "0.9.0.1"]
                              [net.wurstmeister.storm/storm-kafka-0.8-plus "0.2.0"]
                              [clj-http "0.7.8"]
+                             [cheshire "5.3.1"]
                              [zmedelis/clj-geoip "0.1"]
                              [org.clojure/java.jdbc "0.3.0-alpha4"]
                              [postgresql/postgresql "8.4-702.jdbc4"]]}})

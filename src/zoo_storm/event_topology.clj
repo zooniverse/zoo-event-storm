@@ -4,6 +4,7 @@
             [zoo-storm.bolts.gendercode :refer [gendercode-event code-name init-data]]
             [zoo-storm.bolts.geocode :refer [geocoder geocode-event]]
             [zoo-storm.bolts.kafka :refer [kafka-producer]]
+            [zoo-storm.bolts.postgres :refer [to-postgres]]
             [backtype.storm [clojure :refer [topology spout-spec bolt-spec]] [config :refer :all]])
   (:import [backtype.storm LocalCluster])
   (:gen-class))
@@ -19,7 +20,9 @@
    "gendercode" (bolt-spec {"geocode" :shuffle}
                            gendercode-event :p 2)
    "write-to-kafka" (bolt-spec {"gendercode" :shuffle}
-                               kafka-producer :p 2)})
+                               kafka-producer :p 2)
+   "write-to-postgres" (bolt-spec {"gendercode" :shuffle}
+                                  (to-postgres "postgres://storm:storm@localhost:5433/events"))})
 
 (def event-topology
   (topology

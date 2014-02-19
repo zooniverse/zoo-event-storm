@@ -9,10 +9,13 @@
   (:import [backtype.storm LocalCluster])
   (:gen-class))
 
-(def topology-spouts
-  {"classifications-spout" (spout-spec (kafka-spout "33.33.33.10" "classifications"))})
+(defnn topology-spouts
+  [conf]
+  {"classifications-spout" (spout-spec (kafka-spout (:zookeeper conf) "classifications"))
+  "talk-posts-spout" (spout-spec (kafka-spout (:zookeeper conf) "talk-posts"))})
 
-(def topology-bolts
+(defn topology-bolts
+  [conf]
   {"parse-json" (bolt-spec {"classifications-spout" :shuffle} 
                            parse-json :p 2)
    "geocode" (bolt-spec {"parse-json" :shuffle}
@@ -22,24 +25,22 @@
    "write-to-kafka" (bolt-spec {"gendercode" :shuffle}
                                kafka-producer :p 2)
    "write-to-postgres" (bolt-spec {"gendercode" :shuffle}
-                                  (to-postgres "postgres://storm:storm@localhost:5433/events"))})
+                                  (to-postgres (:postgres conf)))})
 
-(def event-topology
+(defn event-topology
+  [conf]
   (topology
-    topology-spouts
-    topology-bolts))
+    (topology-spouts conf)
+    (topology-bolts conf)))
 
-(defn run! [& {debug "debug" workers "workers" :or {debug "true" workers "2"}}]
-  (doto (LocalCluster.)
-    (.submitTopology "Event Topology"
-                     {TOPOLOGY-DEBUG (Boolean/parseBoolean debug)
-                      TOPOLOGY-WORKERS (Integer/parseInt workers)
-                      TOPOLOGY-MAX-SPOUT-PENDING 200}
-                     event-topology)))
-
-(defn -main 
-  [& args]
-  (apply run! args))
+(defn run! [& {debug "debug" workers "workers" :or {debug "true" workers "2"} :as conf}]
+  (let [topology (event-topology conf)] 
+    (doto (LocalCluster.)
+      (.submitTopology "Event Topology"
+                       {TOPOLOGY-DEBUG (Boolean/parseBoolean debug)
+                        TOPOLOGY-WORKERS (Integer/parseInt workers)
+                        TOPOLOGY-MAX-SPOUT-PENDING 200}
+                       event-topology))))
 
 (comment "to-http-stream" (bolt-spec {["gendercode"] :shuffle} to-http-stream :p 2)
-   "to-database" (bolt-spec {["gendercode"] :shuffle} to-database))
+         "to-database" (bolt-spec {["gendercode"] :shuffle} to-database))

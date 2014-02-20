@@ -49,6 +49,6 @@
     (bolt
       (execute [tuple] 
                (let [event (tuple "event")
-                     new-tuple (assoc event :gender (gender-fn (:name event)))]
+                     new-tuple (merge event (gender-fn (:name event)))]
                  (emit-bolt! collector [new-tuple] :anchor tuple)
                  (ack! collector tuple))))))

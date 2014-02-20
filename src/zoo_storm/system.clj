@@ -13,6 +13,10 @@
   [system]
   (apply run! system))
 
+(defn stop
+  [system]
+  {})
+
 (defn -main
   [& [debug workers]]
   (start (merge (system) {:debug debug :workers workers})))

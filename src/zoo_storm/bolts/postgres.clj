@@ -1,16 +1,8 @@
 (ns zoo-storm.bolts.postgres
   (:require [clojure.java.jdbc :as j]
             [clojure.java.jdbc.sql :as s]
-            [core.match :refer [match]]
-            [chesire.core :refer [generate-string]]
             [backtype.storm.clojure :refer [defbolt emit-bolt! ack! bolt]])
   (:gen-class))
-
-(defn get-data
-  [type data]
-  (match [type]
-         [:classification] (:annotations data)
-         [:talk] {}))
 
 (defn to-database-map
   "Formats the storm tuple to the database schema. It expects a table called
@@ -28,14 +20,7 @@
    created_at datetime,
    data json)"
   [{:strs [event type]}]
-  (let [data (get-data (keyword type) data)]
-   (merge (:location event) 
-         (:gender event)
-         {:bson_id (:_id event)
-          :data (generate-string data)
-          :user_id (:user_id event)
-          :created_at (:created_at event)
-          :project (:project_id project)})))
+  {})
 
 (defbolt to-postgres ["action"] {:params [pg-uri] :prepare true}
   [conf context collector]

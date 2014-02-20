@@ -9,7 +9,7 @@
   (:import [backtype.storm LocalCluster])
   (:gen-class))
 
-(defnn topology-spouts
+(defn topology-spouts
   [conf]
   {"classifications-spout" (spout-spec (kafka-spout (:zookeeper conf) "classifications_*"))})
 

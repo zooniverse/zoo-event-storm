@@ -1,6 +1,6 @@
 (ns zoo-storm.event-topology
   (:require [zoo-storm.spouts.kafka :refer [kafka-spout]]
-            [zoo-storm.bolts.parse-json :refer [parse-json]]
+            [zoo-storm.bolts.format-classifications :refer [format-classifications]]
             [zoo-storm.bolts.gendercode :refer [gendercode-event code-name init-data]]
             [zoo-storm.bolts.geocode :refer [geocoder geocode-event]]
             [zoo-storm.bolts.kafka :refer [kafka-producer]]
@@ -11,13 +11,12 @@
 
 (defnn topology-spouts
   [conf]
-  {"classifications-spout" (spout-spec (kafka-spout (:zookeeper conf) "classifications"))
-  "talk-posts-spout" (spout-spec (kafka-spout (:zookeeper conf) "talk-posts"))})
+  {"classifications-spout" (spout-spec (kafka-spout (:zookeeper conf) "classifications_*"))})
 
 (defn topology-bolts
   [conf]
-  {"parse-json" (bolt-spec {"classifications-spout" :shuffle} 
-                           parse-json :p 2)
+  {"format-classification" (bolt-spec {"classifications-spout" :shuffle} 
+                           format-classifications :p 2)
    "geocode" (bolt-spec {"parse-json" :shuffle}
                         geocode-event :p 2)
    "gendercode" (bolt-spec {"geocode" :shuffle}

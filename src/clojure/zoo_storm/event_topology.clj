@@ -22,7 +22,7 @@
    "gendercode" (bolt-spec {"geocode" :shuffle}
                            gendercode-event :p 2)
    "write-to-kafka" (bolt-spec {"gendercode" :shuffle}
-                               (kafka-producer :zookeeper conf) :p 2)
+                               (kafka-producer (:zookeeper conf)) :p 2)
    "write-to-postgres" (bolt-spec {"gendercode" ["type" "project"]}
                                   (to-postgres (:postgres conf)))})
 
@@ -39,7 +39,7 @@
                        {TOPOLOGY-DEBUG (Boolean/parseBoolean debug)
                         TOPOLOGY-WORKERS (Integer/parseInt workers)
                         TOPOLOGY-MAX-SPOUT-PENDING 200}
-                       event-topology))))
+                       topology))))
 
 (comment "to-http-stream" (bolt-spec {["gendercode"] :shuffle} to-http-stream :p 2)
          "to-database" (bolt-spec {["gendercode"] :shuffle} to-database))

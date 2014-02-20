@@ -10,15 +10,19 @@
   (fn [ip]
     (lookup ip)))
 
-(defbolt geocode-event ["event"] {:prepare true} 
+(defbolt geocode-event ["event" "type" "project"] {:prepare true} 
   [conf context collector]
   (let [geo-fn (geocoder)] 
     (bolt
       (execute [tuple]
                (let [event (tuple "event")
+                     type (tupe "type")
+                     project (tuple "project")
                      location (geo-fn (:ip event))
-                     new-tuple (assoc event :location {:country_name (:countryName location)
-                                                       :country_code (:countryCode location)
-                                                       :city (:city location)})]
-                 (emit-bolt! collector [new-tuple] :anchor tuple)
+                     new-tuple (merge event {:country_name (:countryName location)
+                                             :country_code (:countryCode location)
+                                             :latitude (:latitude location)
+                                             :longitude (:longitude location)
+                                             :city (:city location)})]
+                 (emit-bolt! collector [new-tuple type project] :anchor tuple)
                  (ack! collector tuple))))))

@@ -43,12 +43,14 @@
        :male -1
        :female -1})))
 
-(defbolt gendercode-event ["event"] {:prepare true}
+(defbolt gendercode-event ["event" "type" "project"] {:prepare true}
   [conf context collector]
   (let [gender-fn (partial code-name (init-data))] 
     (bolt
       (execute [tuple] 
                (let [event (tuple "event")
+                     type (tupe "type")
+                     project (tuple "project")
                      new-tuple (merge event (gender-fn (:name event)))]
-                 (emit-bolt! collector [new-tuple] :anchor tuple)
+                 (emit-bolt! collector [new-tuple type project] :anchor tuple)
                  (ack! collector tuple))))))

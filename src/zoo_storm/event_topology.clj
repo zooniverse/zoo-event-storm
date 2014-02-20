@@ -17,13 +17,13 @@
   [conf]
   {"format-classification" (bolt-spec {"classifications-spout" :shuffle} 
                            format-classifications :p 2)
-   "geocode" (bolt-spec {"parse-json" :shuffle}
+   "geocode" (bolt-spec {"format-classification" :shuffle}
                         geocode-event :p 2)
    "gendercode" (bolt-spec {"geocode" :shuffle}
                            gendercode-event :p 2)
    "write-to-kafka" (bolt-spec {"gendercode" :shuffle}
-                               kafka-producer :p 2)
-   "write-to-postgres" (bolt-spec {"gendercode" :shuffle}
+                               (kafka-producer :zookeeper conf) :p 2)
+   "write-to-postgres" (bolt-spec {"gendercode" ["type" "project"]}
                                   (to-postgres (:postgres conf)))})
 
 (defn event-topology

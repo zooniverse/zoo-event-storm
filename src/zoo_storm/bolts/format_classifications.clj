@@ -5,7 +5,7 @@
             [clojure.java.io :refer :all])
   (:gen-class))
 
-(defbolt format-classifications ["event"] [tuple collector]
+(defbolt format-classifications ["event" "type" "project"] [tuple collector]
   (let [cls (tuple "classification")
         ans (:annotations cls)
         form (formatters :rfc822)]
@@ -20,7 +20,8 @@
                             :created_at (->> (filter #(contains? % :finished_at ans))
                                             first
                                             second
-                                             (parse form))}]
+                                             (parse form))}
+                           "classification"
+                           (:project_name cls)]
                 :anchor tuple)
     (ack! collector tuple)))
- 

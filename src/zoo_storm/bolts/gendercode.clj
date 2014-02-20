@@ -36,10 +36,10 @@
   [names name]
   (let [[fname] (str/split name #"\s+")]
     (if-let [fname-prob (names (str/upper-case fname))]
-      {:assigned (if (> fname-prob (rand)) "m" "f")
+      {:gender (if (> fname-prob (rand)) "m" "f")
        :male fname-prob
        :female (- 1 fname-prob)}
-      {:assigned "u"
+      {:gender "u"
        :male -1
        :female -1})))
 

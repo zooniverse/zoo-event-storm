@@ -11,11 +11,10 @@
    country_code varchar(2),
    country_name varchar(256),
    city varchar(256),
-   project_id varchar(24),
    gender varchar(1),
    male_prob float,
    female_prob float,
-   bson_id varchar(24),
+   classification_id varchar(24),
    user_id varchar(25),
    created_at datetime,
    data json)"
@@ -27,7 +26,7 @@
   (let [insert (partial j/insert! pg-uri)
         batch (atom {})]
     (bolt
-      (execute [{:strs [event type] :as tuple}]
+      (execute [{:strs [event type project] :as tuple}]
                (swap! batch update-in [type] conj [event type])
                (if (= 10 (count (@batch type)))
                  (do

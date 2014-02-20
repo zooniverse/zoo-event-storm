@@ -14,6 +14,7 @@
                              [clj-kafka "0.1.2-0.8"]
                              [org.clojure/tools.namespace "0.2.3"]   
                              [zmedelis/clj-geoip "0.1"]
+                             [paneer "0.2.0-SNAPSHOT"]
                              [org.clojure/core.match "0.2.1"]
                              [org.clojure/java.jdbc "0.3.0-alpha4"]
                              [postgresql/postgresql "8.4-702.jdbc4"]]

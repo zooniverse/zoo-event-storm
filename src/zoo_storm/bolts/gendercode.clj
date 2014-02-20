@@ -47,10 +47,7 @@
   [conf context collector]
   (let [gender-fn (partial code-name (init-data))] 
     (bolt
-      (execute [tuple] 
-               (let [event (tuple "event")
-                     type (tupe "type")
-                     project (tuple "project")
-                     new-tuple (merge event (gender-fn (:name event)))]
+      (execute [{:strs [event type project] :as tuple}] 
+               (let [new-tuple (merge event (gender-fn (:name event)))]
                  (emit-bolt! collector [new-tuple type project] :anchor tuple)
                  (ack! collector tuple))))))

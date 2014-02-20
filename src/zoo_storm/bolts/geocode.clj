@@ -14,11 +14,8 @@
   [conf context collector]
   (let [geo-fn (geocoder)] 
     (bolt
-      (execute [tuple]
-               (let [event (tuple "event")
-                     type (tupe "type")
-                     project (tuple "project")
-                     location (geo-fn (:ip event))
+      (execute [{:strs [event type project] :as tuple}]
+               (let [location (geo-fn (:ip event))
                      new-tuple (merge event {:country_name (:countryName location)
                                              :country_code (:countryCode location)
                                              :latitude (:latitude location)

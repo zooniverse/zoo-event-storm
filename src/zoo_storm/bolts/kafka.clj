@@ -7,10 +7,10 @@
             [cheshire.core :refer [generate-string]])
   (:gen-class))
 
-(defbolt kafka-producer ["event"] {:prepare true}
+(defbolt kafka-producer ["event"] {:params [zk] :prepare true}
   [config context collector]
   (let [bs (join "," (map #(str (:host %) ":" (:port %))
-                          (brokers {"zookeeper.connect" "33.33.33.10:2181"})))
+                          (brokers {"zookeeper.connect" zk})))
         p (producer {"metadata.broker.list" bs
                      "serializer.class" "kafka.serializer.DefaultEncoder"
                      "partitioner.class" "kafka.producer.DefaultPartitioner"})]
@@ -18,7 +18,7 @@
       (execute [tuple]
                (send-message 
                  p 
-                 (message "events" 
+                 (message (str "events_" (tuple "type") "_" (tuple "project")) 
                           (.getBytes (generate-string (tuple "event")))))
                (emit-bolt! collector tuple :anchor tuple)
                (ack! collector tuple)))))

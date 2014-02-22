@@ -11,7 +11,7 @@
 
 (defn start
   [system]
-  (apply run! system))
+  (run! system))
 
 (defn stop
   [system]

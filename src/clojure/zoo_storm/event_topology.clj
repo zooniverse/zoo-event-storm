@@ -11,7 +11,7 @@
 
 (defn topology-spouts
   [conf]
-  {"classifications-spout" (spout-spec (kafka-spout (:zookeeper conf) "classifications_*"))})
+  {"classifications-spout" (spout-spec (kafka-spout (:zookeeper conf) "classifications_wise"))})
 
 (defn topology-bolts
   [conf]
@@ -32,7 +32,7 @@
     (topology-spouts conf)
     (topology-bolts conf)))
 
-(defn run! [& {debug "debug" workers "workers" :or {debug "true" workers "2"} :as conf}]
+(defn run! [{debug "debug" workers "workers" :or {debug "true" workers "2"} :as conf}]
   (let [topology (event-topology conf)] 
     (doto (LocalCluster.)
       (.submitTopology "Event Topology"

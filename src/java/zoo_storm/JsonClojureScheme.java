@@ -24,6 +24,6 @@ public class JsonClojureScheme implements Scheme {
   }
 
   public Fields getOutputFields() {
-    return new Fields("json");
+    return new Fields("classification");
   }
 }

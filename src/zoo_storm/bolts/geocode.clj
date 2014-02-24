@@ -15,7 +15,7 @@
   (let [geo-fn (geocoder)] 
     (bolt
       (execute [{:strs [event type project] :as tuple}]
-               (let [location (geo-fn (:ip event))
+               (let [location (geo-fn (:user_ip event))
                      new-tuple (merge event {:country_name (:countryName location)
                                              :country_code (:countryCode location)
                                              :latitude (:latitude location)

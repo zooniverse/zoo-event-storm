@@ -1,6 +1,6 @@
 (ns zoo-storm.bolts.postgres
   (:require [korma.core :refer :all]
-            [korma.db :refer [postgres create-db]]
+            [korma.db :refer [postgres create-db with-db]]
             [paneer.core :as p]
             [paneer.db :as pdb]
             [clojure.string :refer [split]]
@@ -10,15 +10,16 @@
 (def batch-queue-limit 10)
 
 (defn table-exists?
-  [table-name]
-  (not (empty? (select :INFORMATION_SCHEMA.COLUMNS
-                       (where {:table_name table-name})))))
+  [db table-name]
+  (not (empty? (with-db db
+                 (select :INFORMATION_SCHEMA.COLUMNS
+                         (where {:table_name table-name}))))))
 
 (def table-exists?-memo (memoize table-exists?))
 
 (defn create-table-if-not-exists
-  [tbl]
-  (if-not (table-exists?-memo tbl)
+  [db tbl]
+  (if-not (table-exists?-memo db tbl)
     (-> (p/create*)
         (p/table tbl)
         (p/column :id :bigserial "PRIMARY KEY")
@@ -37,7 +38,7 @@
         (p/varchar :gender 1)
         (p/float :male)
         (p/float :female)
-        (pdb/execute))))
+        (pdb/execute :db db))))
 
 (defn- uri-to-db-map
   [uri]
@@ -49,7 +50,7 @@
      :host (.getHost uri)
      :port (.getPort uri)}))
 
-(defbolt to-postgres ["action"] {:params [pg-uri] :prepare true}
+(defbolt to-postgres [] {:params [pg-uri] :prepare true}
   [conf context collector]
   (let [db (-> (uri-to-db-map pg-uri) postgres create-db)
         batch (atom {})]
@@ -58,20 +59,11 @@
                (let [key (keyword (str type "-" project))
                      tbl-name (str "events_" type "_" project)]
                  (swap! batch update-in [key] conj event)
-                 (if (= batch-queue-limit (count (@batch key)))
+                 (when (= batch-queue-limit (count (@batch key)))
                    (do
-                     (create-table-if-not-exists tbl-name)
-                     (insert (keyword tbl-name)
-                             (values (@batch key)))
-                     (emit-bolt! collector 
-                                 [(str "Saved " 
-                                       (count (@batch key)) 
-                                       " "
-                                       type
-                                       " "
-                                       project
-                                       " events")] 
-                                 :anchor tuple)
-                     (swap! batch assoc key []))
-                   (emit-bolt! collector ["batched"] :anchor tuple)))
+                     (create-table-if-not-exists db tbl-name)
+                     (with-db db
+                       (insert (keyword tbl-name)
+                               (values (@batch key))))
+                     (swap! batch assoc key []))))
                (ack! collector tuple)))))

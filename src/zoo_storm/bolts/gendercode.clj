@@ -48,6 +48,6 @@
   (let [gender-fn (partial code-name (init-data))] 
     (bolt
       (execute [{:strs [event type project] :as tuple}] 
-               (let [new-tuple (merge event (gender-fn (:name event)))]
+               (let [new-tuple (merge event (gender-fn (:user_name event)))]
                  (emit-bolt! collector [new-tuple type project] :anchor tuple)
                  (ack! collector tuple))))))

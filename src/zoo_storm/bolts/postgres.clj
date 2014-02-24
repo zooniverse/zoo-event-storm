@@ -5,6 +5,7 @@
             [paneer.db :as pdb]
             [cheshire.core :refer [generate-string]]
             [clojure.string :refer [split]]
+            [clojure.tools.logging :as log]
             [zoo-storm.postgres-json :refer :all]
             [backtype.storm.clojure :refer [defbolt emit-bolt! ack! bolt]])
   (:import java.sql.Timestamp)
@@ -22,11 +23,9 @@
                  (select "information_schema.columns"
                          (where {:table_name table-name}))))))
 
-(def table-exists?-memo (memoize table-exists?))
-
 (defn create-table-if-not-exists
   [db tbl]
-  (if-not (table-exists?-memo db tbl)
+  (if-not (table-exists? db tbl)
     (-> (p/create*)
         (p/table tbl)
         (p/column :id :bigserial "PRIMARY KEY")

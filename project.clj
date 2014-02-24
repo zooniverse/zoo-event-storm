@@ -4,9 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :resource-paths ["resources"]
-  :source-paths ["src/clojure"]
-  :java-source-paths ["src/java"]
-  :javac-options ["-target" "1.6" "-source" "1.6"]
+  :aot [zoo-storm.json-scheme]
   :profiles {:dev 
              {:dependencies [[org.clojure/clojure "1.4.0"]
                              [storm "0.9.0.1"]
@@ -16,6 +14,7 @@
                              [com.fasterxml.jackson.core/jackson-databind "2.3.1"]
                              [clj-kafka "0.1.2-0.8"]
                              [org.clojure/tools.namespace "0.2.3"]   
+                             [cheshire "5.3.1"]
                              [zmedelis/clj-geoip "0.1"]
                              [paneer "0.2.0-SNAPSHOT"]
                              [korma "0.3.0-RC5"]

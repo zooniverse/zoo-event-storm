@@ -8,8 +8,10 @@
 
 (defbolt format-classifications ["event" "type" "project"] [tuple collector]
   (let [cls (tuple "classification")
-        ans (:annotations cls)
+        ans (cls "annotations")
         form (formatters :rfc822)]
+    (log/info cls)
+    (log/info ans)
     (log/info (first (filter #(contains? % :finished_at) ans)))
     (emit-bolt! collector [{:classification_id (:_id cls)
                             :user_id (or (:user_id cls) "Not Logged In")

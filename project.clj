@@ -18,4 +18,4 @@
                              [paneer "0.2.0-SNAPSHOT"]
                              [korma "0.3.0-RC5"]
                              [org.clojure/core.match "0.2.1"]
-                             [postgresql/postgresql "8.4-702.jdbc4"]]}})
+                             [org.postgresql/postgresql "9.3-1101-jdbc41"]]}})

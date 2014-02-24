@@ -3,16 +3,23 @@
             [korma.db :refer [postgres create-db with-db]]
             [paneer.core :as p]
             [paneer.db :as pdb]
+            [cheshire.core :refer [generate-string]]
             [clojure.string :refer [split]]
+            [zoo-storm.postgres-json :refer :all]
             [backtype.storm.clojure :refer [defbolt emit-bolt! ack! bolt]])
+  (:import java.sql.Timestamp)
   (:gen-class))
 
 (def batch-queue-limit 10)
 
+(defn to-sql-time
+  [dt]
+  (java.sql.Timestamp. (.getMillis dt)))
+
 (defn table-exists?
   [db table-name]
   (not (empty? (with-db db
-                 (select :INFORMATION_SCHEMA.COLUMNS
+                 (select "information_schema.columns"
                          (where {:table_name table-name}))))))
 
 (def table-exists?-memo (memoize table-exists?))
@@ -31,7 +38,7 @@
         (p/column :data :json)
         (p/timestamp :created_at)
         (p/varchar :country_code 2)
-        (p/varchar :contry_name 50)
+        (p/varchar :country_name 50)
         (p/varchar :city_name 50)
         (p/float :latitude)
         (p/float :longitude)
@@ -53,7 +60,9 @@
 (defbolt to-postgres [] {:params [pg-uri] :prepare true}
   [conf context collector]
   (let [db (-> (uri-to-db-map pg-uri) postgres create-db)
-        batch (atom {})]
+        batch (atom {})
+        transformer (comp #(update-in % [:created_at] to-sql-time)
+                          #(update-in % [:data] to-json-column))]
     (bolt
       (execute [{:strs [event type project] :as tuple}]
                (let [key (keyword (str type "-" project))
@@ -63,7 +72,7 @@
                    (do
                      (create-table-if-not-exists db tbl-name)
                      (with-db db
-                       (insert (keyword tbl-name)
-                               (values (@batch key))))
+                       (insert tbl-name
+                               (values (mapv transformer (@batch key)))))
                      (swap! batch assoc key []))))
                (ack! collector tuple)))))

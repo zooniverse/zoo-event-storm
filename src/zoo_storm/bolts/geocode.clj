@@ -20,6 +20,6 @@
                                              :country_code (:countryCode location)
                                              :latitude (:latitude location)
                                              :longitude (:longitude location)
-                                             :city (:city location)})]
+                                             :city_name (:city location)})]
                  (emit-bolt! collector [new-tuple type project] :anchor tuple)
                  (ack! collector tuple))))))

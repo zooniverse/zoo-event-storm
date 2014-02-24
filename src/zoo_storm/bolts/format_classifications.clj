@@ -24,7 +24,7 @@
                             :user_name (or (:user_name cls) "Not Logged In")
                             :data ans
                             :created_at (parse form t)}
-                           "classification"
+                           "classifications"
                            (:project_name cls)]
                 :anchor tuple)
     (ack! collector tuple)))

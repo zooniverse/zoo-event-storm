@@ -1,6 +1,6 @@
 (ns zoo-storm.json-scheme
   (:require [cheshire.core :refer [parse-string]])
-  (:import 
+  (:import [java.util List]
            [backtype.storm.tuple Values Fields])
   (:gen-class
     :name zoo-storm.json-scheme
@@ -8,11 +8,11 @@
 
 (defn -deserialize
   [_ bytes]
-  (Values. (parse-string (apply str (map char bytes)) true)))
+  [(parse-string (apply str (map char bytes)) true)])
 
 (defn -getOutputFields
   [_]
-  (Fields. ["classification"]))
+  (Fields. ["classifications"]))
 
 (defn new-json-scheme
   []

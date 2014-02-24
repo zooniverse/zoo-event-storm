@@ -11,7 +11,6 @@
                              [net.wurstmeister.storm/storm-kafka-0.8-plus "0.2.0"]
                              [clj-http "0.7.8"]
                              [clj-time "0.6.0"]
-                             [com.fasterxml.jackson.core/jackson-databind "2.3.1"]
                              [clj-kafka "0.1.2-0.8"]
                              [org.clojure/tools.namespace "0.2.3"]   
                              [cheshire "5.3.1"]

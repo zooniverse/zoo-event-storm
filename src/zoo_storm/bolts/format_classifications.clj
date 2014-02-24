@@ -8,11 +8,13 @@
 
 (defbolt format-classifications ["event" "type" "project"] [tuple collector]
   (let [cls (tuple "classification")
-        ans (cls "annotations")
-        form (formatters :rfc822)]
-    (log/info cls)
-    (log/info ans)
-    (log/info (first (filter #(contains? % :finished_at) ans)))
+        ans (:annotations cls)
+        form (formatters :rfc822)
+        t  (str/replace (->> (filter #(contains? % :finished_at) ans)
+                             first
+                             :finished_at)
+                        #"GMT"
+                        "+0000")]
     (emit-bolt! collector [{:classification_id (:_id cls)
                             :user_id (or (:user_id cls) "Not Logged In")
                             :user_ip (:user_ip cls)
@@ -21,10 +23,7 @@
                                             second) 
                             :user_name (or (:user_name cls) "Not Logged In")
                             :data ans
-                            :created_at (->> (filter #(contains? % :finished_at) ans)
-                                            first
-                                            second
-                                             (parse form))}
+                            :created_at (parse form t)}
                            "classification"
                            (:project_name cls)]
                 :anchor tuple)

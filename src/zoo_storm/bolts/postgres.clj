@@ -6,7 +6,7 @@
             [cheshire.core :refer [generate-string]]
             [clojure.string :refer [split]]
             [clojure.tools.logging :as log]
-            [zoo-storm.postgres-json :refer :all]
+            [pg-json.core :refer :all]
             [backtype.storm.clojure :refer [defbolt emit-bolt! ack! bolt]])
   (:import java.sql.Timestamp)
   (:gen-class))

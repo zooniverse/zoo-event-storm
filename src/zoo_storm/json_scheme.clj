@@ -8,7 +8,7 @@
 
 (defn -deserialize
   [_ bytes]
-  [(parse-string (apply str (map char bytes)) true)])
+  [(parse-string (apply str (map #(char (bit-and % 255)) bytes)) true)])
 
 (defn -getOutputFields
   [_]

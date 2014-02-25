@@ -13,17 +13,17 @@
 
 (def batch-queue-limit 10)
 
-(defn to-sql-time
+(defn- to-sql-time
   [dt]
   (java.sql.Timestamp. (.getMillis dt)))
 
-(defn table-exists?
+(defn- table-exists?
   [db table-name]
   (not (empty? (with-db db
                  (select "information_schema.columns"
                          (where {:table_name table-name}))))))
 
-(defn create-table-if-not-exists
+(defn- create-table-if-not-exists
   [db tbl]
   (if-not (table-exists? db tbl)
     (-> (p/create*)

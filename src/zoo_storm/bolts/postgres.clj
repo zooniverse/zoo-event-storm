@@ -29,7 +29,7 @@
     (-> (p/create*)
         (p/table tbl)
         (p/column :id :bigserial "PRIMARY KEY")
-        (p/varchar :classification_id 24)
+        (p/varchar :data_id 24)
         (p/varchar :user_id 24)
         (p/varchar :user_ip 15)
         (p/text :user_agent)

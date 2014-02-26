@@ -17,6 +17,7 @@
                              [zmedelis/clj-geoip "0.1"]
                              [paneer "0.2.0-SNAPSHOT"]
                              [korma "0.3.0-RC5"]
+                             [org.clojure/math.combinatorics "0.0.7"]
                              [pg-json "0.1.0-SNAPSHOT"]
                              [org.clojure/core.match "0.2.1"]
                              [org.postgresql/postgresql "9.3-1101-jdbc41"]]}})

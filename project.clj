@@ -4,7 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :resource-paths ["resources"]
-  :javac-options {:debug "true" :fork "true"}
+  :javac-options ["-target" "1.6" "-source" "1.6"]
   :aot [zoo-storm.system] 
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [net.wurstmeister.storm/storm-kafka-0.8-plus "0.2.0"]
@@ -19,7 +19,7 @@
                  [org.clojure/math.combinatorics "0.0.7"]
                  [pg-json "0.1.0-SNAPSHOT"]
                  [org.clojure/core.match "0.2.1"]
-                 [org.postgresql/postgresql "9.3-1101-jdbc41"]]
+                 [postgresql "9.1-901.jdbc4"]]
   :profiles {:dev 
              {:dependencies [[storm "0.9.0.1"]]}
              :provided

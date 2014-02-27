@@ -32,6 +32,7 @@
         (p/varchar :data_id 24)
         (p/varchar :user_id 24)
         (p/varchar :user_ip 15)
+        (p/varchar :lang 5)
         (p/text :user_agent)
         (p/text :user_name)
         (p/column :data :json)

@@ -11,7 +11,7 @@
         ans (:annotations cls)
         form (formatters :date-time-no-ms)
         t (:timestamp cls)]
-    (emit-bolt! collector [{:data_id (:_id cls)
+    (emit-bolt! collector [{:data_id (:id cls)
                             :user_id (or (:user_id cls) "Not Logged In")
                             :user_ip (:user_ip cls)
                             :lang (-> (filter #(contains? % :user_agent) ans)
@@ -20,7 +20,7 @@
                             :user_agent (-> (filter #(contains? % :user_agent) ans) 
                                             first 
                                             :user_agent)
-                            :user_name (or (:user_name cls) "Not Logged In")
+                            :user_name (or (:user cls) "Not Logged In")
                             :data ans
                             :created_at (parse form t)}
                            "classifications"

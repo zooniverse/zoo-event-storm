@@ -1,5 +1,6 @@
 (ns zoo-storm.system
-  [require [zoo-storm.event-topology :refer [run!]]])
+  (:require [zoo-storm.event-topology :refer [run-local! submit-topology!]])
+  (:gen-class))
 
 (defn system
   []
@@ -7,6 +8,8 @@
     {:zookeeper (or (get env "ZK_URI") "33.33.33.10:2181")
      :postgres (or (get env "DATABASE_URL") "postgres://storm:storm@localhost:5433/events")
      :topics ["classifications"]
+     :debug true
+     :workers 2
      :projects ["andromeda"
                 "asteroid"
                 "bat_detective"
@@ -29,13 +32,15 @@
                 "worms"]}))
 
 (defn start
-  [system]
-  (run! system))
+  ([system]
+   (run-local! system))
+  ([system name]
+   (submit-topology! system name)))
 
 (defn stop
   [system]
   {})
 
 (defn -main
-  [& [debug workers]]
-  (start (merge (system) {:debug debug :workers workers})))
+  [& [name postgres zookeeper]]
+  (start (merge (system) (into {} (filter second {:postgres postgres :zookeeper zookeeper}))) name))

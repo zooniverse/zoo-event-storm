@@ -7,7 +7,7 @@
             [zoo-storm.bolts.postgres :refer [to-postgres]]
             [clojure.math.combinatorics :refer [cartesian-product]]
             [backtype.storm [clojure :refer [topology spout-spec bolt-spec]] [config :refer :all]])
-  (:import [backtype.storm LocalCluster])
+  (:import [backtype.storm LocalCluster StormSubmitter])
   (:gen-class))
 
 (defn gen-spouts
@@ -41,7 +41,7 @@
     (topology-spouts conf)
     (topology-bolts conf)))
 
-(defn run! [{debug "debug" workers "workers" :or {debug "true" workers "2"} :as conf}]
+(defn run-local! [{debug :debug workers :workers :as conf}]
   (let [topology (event-topology conf)] 
     (doto (LocalCluster.)
       (.submitTopology "Event Topology"
@@ -49,3 +49,10 @@
                         TOPOLOGY-WORKERS (Integer/parseInt workers)
                         TOPOLOGY-MAX-SPOUT-PENDING 200}
                        topology))))
+
+(defn submit-topology! [{debug :debug workers :workers :as conf} name]
+  (StormSubmitter/submitTopology
+    name
+    {TOPOLOGY-DEBUG debug
+     TOPOLOGY-WORKERS workers}
+    (event-topology conf)))

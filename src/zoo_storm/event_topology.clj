@@ -20,9 +20,8 @@
 
 (defn topology-bolts
   [{:keys [zookeeper postgres topics]}]
-  (let [spouts (reduce #(assoc %1 (str %2 "-spout") :shuffle) {} topics)] 
-    {"format-classification" (bolt-spec spouts
-                           format-classifications :p 5)
+  {"format-classification" (bolt-spec "classification-spout" 
+                                      format-classifications :p 5)
    "geocode" (bolt-spec {"format-classification" :shuffle}
                         geocode-event :p 2)
    "gendercode" (bolt-spec {"geocode" :shuffle}
@@ -30,7 +29,7 @@
    "write-to-kafka" (bolt-spec {"gendercode" :shuffle}
                                (kafka-producer zookeeper) :p 2)
    "write-to-postgres" (bolt-spec {"gendercode" ["type" "project"]}
-                                  (to-postgres postgres))}))
+                                  (to-postgres postgres))})
 
 (defn event-topology
   [conf]

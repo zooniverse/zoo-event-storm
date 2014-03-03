@@ -17,14 +17,14 @@
                             :user_id (or (:user_id cls) "Not Logged In")
                             :user_ip (:user_ip cls)
                             :subjects (str/join "," (:subjects cls))
-                            :lang (-> (filter #(contains? % :user_agent) ans)
+                            :lang (-> (filter #(contains? % :lang) ans)
                                       first
                                       :lang)
                             :user_agent (-> (filter #(contains? % :user_agent) ans) 
                                             first 
                                             :user_agent)
                             :user_name (or (:user cls) "Not Logged In")
-                            :data ans
+                            :data (filter #(or (contains? % :lang) (contains? % :user_agent)) ans)
                             :created_at (parse form t)}
                            "classifications"
                            (:project cls)]

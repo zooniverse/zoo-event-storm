@@ -13,7 +13,7 @@
                  [clj-kafka "0.1.2-0.8"]
                  [org.clojure/tools.namespace "0.2.3"]   
                  [cheshire "5.3.1"]
-                 [zmedelis/clj-geoip "0.1"]
+                 [zmedelis/clj-geoip "0.1-SNAPSHOT"]
                  [paneer "0.2.0-SNAPSHOT"]
                  [korma "0.3.0-RC5"]
                  [org.clojure/math.combinatorics "0.0.7"]

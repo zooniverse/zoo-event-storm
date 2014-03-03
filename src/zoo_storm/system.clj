@@ -33,6 +33,7 @@
 
 (defn start
   ([system]
+   (println system)
    (run-local! system))
   ([system name]
    (submit-topology! system name)))
@@ -42,5 +43,7 @@
   {})
 
 (defn -main
-  [& [name postgres zookeeper]]
-  (start (merge (system) (into {} (filter second {:postgres postgres :zookeeper zookeeper}))) name))
+  [& [postgres zookeeper name]]
+  (if name
+    (start (merge (system) (into {} (filter second {:postgres postgres :zookeeper zookeeper :projects ["wise"]}))) name)
+    (start (merge (system) (into {} (filter second {:postgres postgres :zookeeper zookeeper :projects ["wise"]}))))))

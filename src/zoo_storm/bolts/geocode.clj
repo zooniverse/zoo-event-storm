@@ -4,15 +4,9 @@
            [backtype.storm.clojure :refer [defbolt bolt emit-bolt! ack!]])
   (:gen-class))
 
-(defn geocoder
-  []
-  (geoip-init)
-  (fn [ip]
-    (lookup ip)))
-
 (defbolt geocode-event ["event" "type" "project"] {:prepare true} 
   [conf context collector]
-  (let [geo-fn (geocoder)] 
+  (let [geo-fn (geoip-init)] 
     (bolt
       (execute [{:strs [event type project] :as tuple}]
                (let [location (geo-fn (:user_ip event))

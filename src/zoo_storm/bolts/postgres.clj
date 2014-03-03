@@ -35,6 +35,7 @@
         (p/varchar :lang 5)
         (p/text :user_agent)
         (p/text :user_name)
+        (p/text :subjects)
         (p/column :data :json)
         (p/timestamp :created_at)
         (p/varchar :country_code 2)

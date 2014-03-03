@@ -2,7 +2,7 @@
   (:require [zoo-storm.spouts.kafka :refer [kafka-spout]]
             [zoo-storm.bolts.format-classifications :refer [format-classifications]]
             [zoo-storm.bolts.gendercode :refer [gendercode-event code-name init-data]]
-            [zoo-storm.bolts.geocode :refer [geocoder geocode-event]]
+            [zoo-storm.bolts.geocode :refer [geocode-event]]
             [zoo-storm.bolts.kafka :refer [kafka-producer]]
             [zoo-storm.bolts.postgres :refer [to-postgres]]
             [clojure.math.combinatorics :refer [cartesian-product]]
@@ -45,8 +45,8 @@
   (let [topology (event-topology conf)] 
     (doto (LocalCluster.)
       (.submitTopology "Event Topology"
-                       {TOPOLOGY-DEBUG (Boolean/parseBoolean debug)
-                        TOPOLOGY-WORKERS (Integer/parseInt workers)
+                       {TOPOLOGY-DEBUG debug
+                        TOPOLOGY-WORKERS workers
                         TOPOLOGY-MAX-SPOUT-PENDING 200}
                        topology))))
 

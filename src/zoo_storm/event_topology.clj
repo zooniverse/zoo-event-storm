@@ -5,25 +5,22 @@
             [zoo-storm.bolts.geocode :refer [geocode-event]]
             [zoo-storm.bolts.kafka :refer [kafka-producer]]
             [zoo-storm.bolts.postgres :refer [to-postgres]]
-            [clojure.math.combinatorics :refer [cartesian-product]]
             [backtype.storm [clojure :refer [topology spout-spec bolt-spec]] [config :refer :all]])
   (:import [backtype.storm LocalCluster StormSubmitter])
   (:gen-class))
 
 (defn gen-spouts
-  [zk m [topic project]]
-  (let [s-name (str topic "-" project "-spout")
-        k-topic (str topic "_" project)]
-    (assoc m s-name (spout-spec (kafka-spout zk k-topic)))))
+  [zk m topic]
+  (let [s-name (str topic "-spout")]
+    (assoc m s-name (spout-spec (kafka-spout zk topic)))))
 
 (defn topology-spouts
-  [{:keys [topics projects zookeeper]}]
-  (reduce (partial gen-spouts zookeeper) {} (cartesian-product topics projects)))
+  [{:keys [topics zookeeper]}]
+  (reduce (partial gen-spouts zookeeper) {} topics))
 
 (defn topology-bolts
-  [{:keys [zookeeper postgres topics projects]}]
-  (let [spouts (reduce #(assoc %1 (str (first %2) "-" (second %2) "-spout") :shuffle) 
-                       {} (cartesian-product topics projects))] 
+  [{:keys [zookeeper postgres topics]}]
+  (let [spouts (reduce #(assoc %1 (str %2 "-spout") :shuffle) {} topics)] 
     {"format-classification" (bolt-spec spouts
                            format-classifications :p 5)
    "geocode" (bolt-spec {"format-classification" :shuffle}

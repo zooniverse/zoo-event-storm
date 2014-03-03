@@ -46,4 +46,4 @@
   [& [postgres zookeeper name]]
   (if name
     (start (merge (system) (into {} (filter second {:postgres postgres :zookeeper zookeeper :projects ["wise"]}))) name)
-    (start (merge (system) (into {} (filter second {:postgres postgres :zookeeper zookeeper :projects ["wise"]}))))))
+    (start (merge (system) (into {} (filter second {:postgres postgres :zookeeper zookeeper}))))))

@@ -20,7 +20,7 @@
 
 (defn topology-bolts
   [{:keys [zookeeper postgres topics]}]
-  {"format-classification" (bolt-spec "classification-spout" 
+  {"format-classification" (bolt-spec {"classifications-spout" :shuffle} 
                                       format-classifications :p 5)
    "geocode" (bolt-spec {"format-classification" :shuffle}
                         geocode-event :p 2)

@@ -24,7 +24,7 @@
                                             first 
                                             :user_agent)
                             :user_name (or (:user cls) "Not Logged In")
-                            :data (filter #(or (contains? % :lang) (contains? % :user_agent)) ans)
+                            :data (filter #(not (or (contains? % :lang) (contains? % :user_agent))) ans)
                             :created_at (parse form t)}
                            "classifications"
                            (:project cls)]

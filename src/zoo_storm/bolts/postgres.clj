@@ -67,8 +67,15 @@
     (bolt
       (execute [{:strs [event type project] :as tuple}]
                (let [key (str type "-" project)
-                     tbl-name (str "events_" type "_" project)]
-                 (swap! batch update-in [key] conj event)
+                     tbl-name (str "events_" type "_" project)
+                     not-exists  (empty? (with-db db 
+                                       (select tbl-name 
+                                               (where {:data_id (:data_id event)})
+                                               (limit 1))))
+                     not-batched (empty? (filter #(= % (:data_id event)) 
+                                                 (map :data_id @(batch key))))]
+                 (when (and not-exists not-batched) 
+                   (swap! batch update-in [key] conj event))
                  (when (= batch-queue-limit (count (@batch key)))
                    (do
                      (create-table-if-not-exists db tbl-name)

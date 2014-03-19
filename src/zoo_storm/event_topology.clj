@@ -29,7 +29,7 @@
    "write-to-kafka" (bolt-spec {"gendercode" :shuffle}
                                (kafka-producer zookeeper) :p 2)
    "write-to-postgres" (bolt-spec {"gendercode" ["type" "project"]}
-                                  (to-postgres postgres))})
+                                  (to-postgres postgres) :p 2)})
 
 (defn event-topology
   [conf]

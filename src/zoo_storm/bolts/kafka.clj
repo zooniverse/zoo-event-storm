@@ -17,8 +17,8 @@
                      "partitioner.class" "kafka.producer.DefaultPartitioner"})]
     (bolt
       (execute [tuple]
-               (send-message 
-                 p 
-                 (message (str "events_" (tuple "type") "_" (tuple "project")) 
-                          (.getBytes (generate-string (update-in (tuple "event") [:created_at] #(unparse (formatters :rfc822) %))))))
+               (let [event (update-in (tuple "event") [:created_at] #(unparse (formatters :rfc822) %))   
+                     {:strs [type project]} tuple
+                     json (generate-string {:type type :project project :event event})] 
+                 (send-message p (message "events" (.getBytes json))))
                (ack! collector tuple)))))

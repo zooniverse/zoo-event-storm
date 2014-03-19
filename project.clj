@@ -17,7 +17,7 @@
                  [paneer "0.2.0-SNAPSHOT"]
                  [korma "0.3.0-RC5"]
                  [org.clojure/math.combinatorics "0.0.7"]
-                 [pg-json "0.1.0-SNAPSHOT"]
+                 [pg-json "0.2.0-SNAPSHOT"]
                  [org.clojure/core.match "0.2.1"]
                  [postgresql "9.1-901.jdbc4"]]
   :profiles {:dev 

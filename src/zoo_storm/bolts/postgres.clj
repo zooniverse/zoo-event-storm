@@ -66,7 +66,7 @@
                           #(update-in % [:data] to-json-column))]
     (bolt
       (execute [{:strs [event type project] :as tuple}]
-               (let [key (keyword (str type "-" project))
+               (let [key (str type "-" project)
                      tbl-name (str "events_" type "_" project)]
                  (swap! batch update-in [key] conj event)
                  (when (= batch-queue-limit (count (@batch key)))
@@ -75,5 +75,5 @@
                      (with-db db
                        (insert tbl-name
                                (values (mapv transformer (@batch key)))))
-                     (swap! batch assoc key []))))
+                     (swap! batch dissoc key))))
                (ack! collector tuple)))))

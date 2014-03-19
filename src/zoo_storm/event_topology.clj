@@ -10,13 +10,13 @@
   (:gen-class))
 
 (defn gen-spouts
-  [zk m topic]
+  [zk client-id m topic]
   (let [s-name (str topic "-spout")]
-    (assoc m s-name (spout-spec (kafka-spout zk topic)))))
+    (assoc m s-name (spout-spec (kafka-spout zk topic (or client-id "local-cluster"))))))
 
 (defn topology-spouts
-  [{:keys [topics zookeeper]}]
-  (reduce (partial gen-spouts zookeeper) {} topics))
+  [{:keys [topics zookeeper client-id]}]
+  (reduce (partial gen-spouts zookeeper client-id) {} topics))
 
 (defn topology-bolts
   [{:keys [zookeeper postgres topics]}]
@@ -51,4 +51,4 @@
     name
     {TOPOLOGY-DEBUG debug
      TOPOLOGY-WORKERS workers}
-    (event-topology conf)))
+    (event-topology (merge conf {:client-id name}))))

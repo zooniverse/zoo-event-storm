@@ -11,7 +11,7 @@
   (:import java.sql.Timestamp)
   (:gen-class))
 
-(def batch-queue-limit 10)
+(def batch-queue-limit 100)
 
 (defn- to-sql-time
   [dt]
@@ -66,6 +66,7 @@
                           #(update-in % [:data] to-json-column))]
     (bolt
       (execute [{:strs [event type project] :as tuple}]
+               (create-table-if-not-exists db (str "events_" type "_" project))
                (let [key (str type "-" project)
                      tbl-name (str "events_" type "_" project)
                      not-exists  (empty? (with-db db 
@@ -73,12 +74,11 @@
                                                (where {:data_id (:data_id event)})
                                                (limit 1))))
                      not-batched (empty? (filter #(= % (:data_id event)) 
-                                                 (map :data_id @(batch key))))]
+                                                 (map :data_id (@batch key))))]
                  (when (and not-exists not-batched) 
                    (swap! batch update-in [key] conj event))
                  (when (= batch-queue-limit (count (@batch key)))
                    (do
-                     (create-table-if-not-exists db tbl-name)
                      (with-db db
                        (insert tbl-name
                                (values (mapv transformer (@batch key)))))

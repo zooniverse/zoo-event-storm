@@ -20,5 +20,5 @@
                (let [event (update-in (tuple "event") [:created_at] #(unparse (formatters :rfc822) %))   
                      {:strs [type project]} tuple
                      json (generate-string {:type type :project project :event event})] 
-                 (send-message p (message "events" (.getBytes json))))
+                 (send-message p (message "events" (.getBytes (str type "_" project)) (.getBytes json))))
                (ack! collector tuple)))))

@@ -17,15 +17,25 @@
   [dt]
   (java.sql.Timestamp. (.getMillis dt)))
 
+(defn- existence-check
+  [tables db table-name]
+  (if-not (nil? (tables table-name)) 
+    (tables table-name)  
+    (not (empty? (with-db db
+                   (select "information_schema.columns"
+                           (where {:table_name table-name})))))))
+
 (defn- table-exists?
-  [db table-name]
-  (not (empty? (with-db db
-                 (select "information_schema.columns"
-                         (where {:table_name table-name}))))))
+  []
+  (let [tables (atom #{})] 
+    (fn [db table-name] 
+      (let [exists? (existence-check @tables db table-name)] 
+        (swap! tables conj table-name)
+        exists?))))
 
 (defn- create-table-if-not-exists
-  [db tbl]
-  (if-not (table-exists? db tbl)
+  [db tbl table-test]
+  (if-not (table-test db tbl)
     (-> (p/create*)
         (p/table tbl)
         (p/column :id :bigserial "PRIMARY KEY")
@@ -61,18 +71,19 @@
 (defbolt to-postgres [] {:params [pg-uri] :prepare true}
   [conf context collector]
   (let [db (-> (uri-to-db-map pg-uri) postgres create-db)
+        table-test (table-exists?)
         batch (atom {})
         transformer (comp #(update-in % [:created_at] to-sql-time)
                           #(update-in % [:data] to-json-column))]
     (bolt
       (execute [{:strs [event type project] :as tuple}]
-               (create-table-if-not-exists db (str "events_" type "_" project))
+               (create-table-if-not-exists db (str "events_" type "_" project) table-test)
                (let [key (str type "-" project)
                      tbl-name (str "events_" type "_" project)
                      not-exists  (empty? (with-db db 
-                                       (select tbl-name 
-                                               (where {:data_id (:data_id event)})
-                                               (limit 1))))
+                                           (select tbl-name 
+                                                   (where {:data_id (:data_id event)})
+                                                   (limit 1))))
                      not-batched (empty? (filter #(= % (:data_id event)) 
                                                  (map :data_id (@batch key))))]
                  (when (and not-exists not-batched) 

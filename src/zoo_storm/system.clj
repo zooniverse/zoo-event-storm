@@ -1,21 +1,52 @@
 (ns zoo-storm.system
-  (:require [zoo-storm.event-topology :refer [run-local! submit-topology!]])
+  (:require [zoo-storm.event-topology :refer [run-local! submit-topology!]]
+            [zoo-storm.database :refer :all]
+            [clojure.math.combinatorics :refer [cartesian-product]])
   (:gen-class))
 
 (defn system
   []
-  (let [env (System/getenv)]
-    {:zookeeper (or (get env "ZK_URI") "33.33.33.10:2181")
-     :postgres (or (get env "DATABASE_URL") "postgres://storm:storm@localhost:5433/events")
-     :topics ["classifications"]
-     :debug true
-     :workers 2}))
+  {:zookeeper ""
+   :postgres "" 
+   :topics ["classifications"]
+   :projects ["andromeda"
+              "asteroid"
+              "bat_detective"
+              "cancer_cells"
+              "cancer_gene_runner"
+              "condor"
+              "cyclone_center"
+              "galaxy_zoo" 
+              "leaf"
+              "m83"
+              "milky_way"
+              "notes_from_nature"
+              "penguin"
+              "planet_four"
+              "plankton"
+              "radio"
+              "sea_floor"
+              "serengeti"
+              "spacewarp"
+              "sunspot"
+              "war_diary"
+              "wise"
+              "worms"] 
+   :debug true
+   :workers 2})
+
+(defn create-tables
+  [:keys {projects topics postgres}]
+  (let [db (create-db-connection postgres)]
+    (doseq [pair (cartesian-product topics projects)]
+      (create-table-if-not-exists db (str "events_" (first pair) "_" (last pair))))))
 
 (defn start
   ([system]
-   (println system)
+   (create-tables system)
    (run-local! system))
   ([system name]
+   (create-tables system)
    (submit-topology! system name)))
 
 (defn stop
@@ -23,7 +54,11 @@
   {})
 
 (defn -main
-  [& [postgres zookeeper name]]
-  (if name
-    (start (merge (system) (into {} (filter second {:postgres postgres :zookeeper zookeeper}))) name)
-    (start (merge (system) (into {} (filter second {:postgres postgres :zookeeper zookeeper}))))))
+  [& [postgres zookeeper kafka name]]
+  (let [args {:postgres postgres 
+              :zookeeper zookeeper
+              :kafka kafka}
+        system (merge (system) args)] 
+    (if name
+      (start system name)
+      (start system))))

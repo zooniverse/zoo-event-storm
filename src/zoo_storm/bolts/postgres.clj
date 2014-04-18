@@ -1,97 +1,41 @@
 (ns zoo-storm.bolts.postgres
   (:require [korma.core :refer :all]
-            [korma.db :refer [postgres create-db with-db]]
-            [paneer.core :as p]
-            [paneer.db :as pdb]
+            [korma.db :refer [with-db]]
             [cheshire.core :refer [generate-string]]
-            [clojure.string :refer [split]]
             [clojure.tools.logging :as log]
             [pg-json.core :refer :all]
+            [zoo-storm.database :refer :all]
             [backtype.storm.clojure :refer [defbolt emit-bolt! ack! bolt]])
   (:import java.sql.Timestamp)
   (:gen-class))
 
-(def batch-queue-limit 100)
+(def batch-queue-limit 25)
 
 (defn- to-sql-time
   [dt]
   (java.sql.Timestamp. (.getMillis dt)))
 
-(defn- existence-check
-  [tables db table-name]
-  (if-not (nil? (tables table-name)) 
-    (tables table-name)  
-    (not (empty? (with-db db
-                   (select "information_schema.columns"
-                           (where {:table_name table-name})))))))
-
-(defn- table-exists?
-  []
-  (let [tables (atom #{})] 
-    (fn [db table-name] 
-      (let [exists? (existence-check @tables db table-name)] 
-        (swap! tables conj table-name)
-        exists?))))
-
-(defn- create-table-if-not-exists
-  [db tbl table-test]
-  (if-not (table-test db tbl)
-    (-> (p/create*)
-        (p/table tbl)
-        (p/column :id :bigserial "PRIMARY KEY")
-        (p/varchar :data_id 24 "NOT NULL UNIQUE")
-        (p/varchar :user_id 24)
-        (p/varchar :user_ip 15)
-        (p/varchar :lang 5)
-        (p/text :user_agent)
-        (p/text :user_name)
-        (p/text :subjects)
-        (p/column :data :json)
-        (p/timestamp :created_at)
-        (p/varchar :country_code 2)
-        (p/varchar :country_name 50)
-        (p/varchar :city_name 50)
-        (p/float :latitude)
-        (p/float :longitude)
-        (p/varchar :gender 1)
-        (p/float :male)
-        (p/float :female)
-        (pdb/execute :db db))))
-
-(defn- uri-to-db-map
-  [uri]
-  (let [uri (java.net.URI. uri)
-        [username password] (split (.getUserInfo uri) #":")]
-    {:db (apply str (drop 1 (.getPath uri)))
-     :user username
-     :password password
-     :host (.getHost uri)
-     :port (.getPort uri)}))
-
 (defbolt to-postgres [] {:params [pg-uri] :prepare true}
   [conf context collector]
-  (let [db (-> (uri-to-db-map pg-uri) postgres create-db)
-        table-test (table-exists?)
+  (let [db (create-db-connection pg-uri)
         batch (atom {})
         transformer (comp #(update-in % [:created_at] to-sql-time)
                           #(update-in % [:data] to-json-column))]
     (bolt
       (execute [{:strs [event type project] :as tuple}]
-               (create-table-if-not-exists db (str "events_" type "_" project) table-test)
-               (let [key (str type "-" project)
-                     tbl-name (str "events_" type "_" project)
-                     not-exists  (empty? (with-db db 
-                                           (select tbl-name 
-                                                   (where {:data_id (:data_id event)})
-                                                   (limit 1))))
-                     not-batched (empty? (filter #(= % (:data_id event)) 
-                                                 (map :data_id (@batch key))))]
-                 (when (and not-exists not-batched) 
-                   (swap! batch update-in [key] conj event))
-                 (when (= batch-queue-limit (count (@batch key)))
-                   (do
+               (ack! collector tuple)    
+
+               (let [tbl-name (str "events_" type "_" project)
+                     project-batch (@batch key)]
+                 (swap! batch update-in [key] assoc (:data_id event) event)
+                 (when (= batch-queue-limit (count project-batch))
+                   (let [existing-ids (with-db db
+                                        (select tbl-name
+                                                (where {:data_id [in (keys project-batch)]})))
+                         data (->> (apply dissoc project-batch existing-ids)
+                                   values
+                                   (mapv transformer))]
                      (with-db db
                        (insert tbl-name
-                               (values (mapv transformer (@batch key)))))
-                     (swap! batch dissoc key))))
-               (ack! collector tuple)))))
+                               (values data)))
+                     (swap! batch dissoc key))))))))

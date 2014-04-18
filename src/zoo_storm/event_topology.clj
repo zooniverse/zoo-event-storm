@@ -3,10 +3,11 @@
             [zoo-storm.bolts.format-classifications :refer [format-classifications]]
             [zoo-storm.bolts.gendercode :refer [gendercode-event code-name init-data]]
             [zoo-storm.bolts.geocode :refer [geocode-event]]
-            [zoo-storm.bolts.kafka :refer [kafka-producer]]
+            [zoo-storm.bolts.kafka :refer [kafka-format]]
             [zoo-storm.bolts.postgres :refer [to-postgres]]
             [backtype.storm [clojure :refer [topology spout-spec bolt-spec]] [config :refer :all]])
-  (:import [backtype.storm LocalCluster StormSubmitter])
+  (:import [backtype.storm LocalCluster StormSubmitter]
+           [storm.kafka.bolt.KafkaBolt])
   (:gen-class))
 
 (defn gen-spouts
@@ -26,8 +27,10 @@
                         geocode-event :p 4)
    "gendercode" (bolt-spec {"geocode" :shuffle}
                            gendercode-event :p 4)
-   "write-to-kafka" (bolt-spec {"gendercode" :shuffle}
-                               (kafka-producer zookeeper) :p 4)
+   "format-kafka" (bolt-spec {"gendercode" :shuffle}
+                             (kafka-format zookeeper) :p 4)
+   "write-to-kafka" (bolt-spec {"format-kafka" :shuffle} 
+                               (KafkaBolt.) :p 4)
    "write-to-postgres" (bolt-spec {"gendercode" ["type" "project"]}
                                   (to-postgres postgres) :p 4)})
 
@@ -51,6 +54,6 @@
     name
     {TOPOLOGY-DEBUG false
      TOPOLOGY-WORKERS workers
-     TOPOLOGY-MESSAGE-TIMEOUT-SECS 60
-     TOPOLOGY-MAX-SPOUT-PENDING 1500}
+     TOPOLOGY-MESSAGE-TIMEOUT-SECS 120
+     TOPOLOGY-MAX-SPOUT-PENDING 3500}
     (event-topology (merge conf {:client-id name}))))

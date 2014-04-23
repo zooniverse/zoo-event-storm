@@ -7,6 +7,6 @@
 
 (defbolt kafka-format ["key" "message"] [{:strs [event type project] :as tuple} collector] 
   (let [event (update-in event [:created_at] #(unparse (formatters :rfc822) %))   
-        json (generate-string {:type type :project project :event event})] 
-    (emit-bolt! collector [(str type "_" project) json])
+        json (.getBytes (generate-string {:type type :project project :event event}))] 
+    (emit-bolt! collector [(.getBytes (str type "_" project)) json] :anchor tuple)
     (ack! collector tuple)))

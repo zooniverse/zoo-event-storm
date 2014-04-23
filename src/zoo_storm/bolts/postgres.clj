@@ -9,7 +9,7 @@
   (:import java.sql.Timestamp)
   (:gen-class))
 
-(def batch-queue-limit 25)
+(def batch-queue-limit 5)
 
 (defn- to-sql-time
   [dt]
@@ -24,18 +24,11 @@
     (bolt
       (execute [{:strs [event type project] :as tuple}]
                (ack! collector tuple)    
-
                (let [tbl-name (str "events_" type "_" project)
-                     project-batch (@batch key)]
-                 (swap! batch update-in [key] assoc (:data_id event) event)
+                     project-batch (@batch tbl-name)]
+                 (swap! batch update-in [tbl-name] conj event)
                  (when (= batch-queue-limit (count project-batch))
-                   (let [existing-ids (with-db db
-                                        (select tbl-name
-                                                (where {:data_id [in (keys project-batch)]})))
-                         data (->> (apply dissoc project-batch existing-ids)
-                                   values
-                                   (mapv transformer))]
+                   (let [data (mapv transformer project-batch)]
                      (with-db db
-                       (insert tbl-name
-                               (values data)))
-                     (swap! batch dissoc key))))))))
+                       (insert tbl-name (values data)))
+                     (swap! batch assoc tbl-name nil))))))))

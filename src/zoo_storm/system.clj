@@ -8,12 +8,12 @@
   []
   {:zookeeper ""
    :postgres "" 
+   :kafka ""
    :topics ["classifications"]
    :projects ["andromeda"
               "asteroid"
               "bat_detective"
               "cancer_cells"
-              "cancer_gene_runner"
               "condor"
               "cyclone_center"
               "galaxy_zoo" 
@@ -36,7 +36,7 @@
    :workers 2})
 
 (defn create-tables
-  [:keys {projects topics postgres}]
+  [{:keys [projects topics postgres]}]
   (let [db (create-db-connection postgres)]
     (doseq [pair (cartesian-product topics projects)]
       (create-table-if-not-exists db (str "events_" (first pair) "_" (last pair))))))

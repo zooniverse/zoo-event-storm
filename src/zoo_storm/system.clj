@@ -33,7 +33,7 @@
               "wise"
               "worms"] 
    :debug true
-   :workers 2})
+   :workers 1})
 
 (defn create-tables
   [{:keys [projects topics postgres]}]

@@ -13,7 +13,7 @@
 (defn gen-spouts
   [zk client-id m topic]
   (let [s-name (str topic "-spout")]
-    (assoc m s-name (spout-spec (kafka-spout zk topic (or client-id "local-cluster")) :p 4))))
+    (assoc m s-name (spout-spec (kafka-spout zk topic (or client-id "local-cluster")) :p 1))))
 
 (defn topology-spouts
   [{:keys [topics zookeeper client-id]}] 
@@ -22,17 +22,17 @@
 (defn topology-bolts
   [{:keys [projects postgres topics]}]
   {"format-classification" (bolt-spec {"classifications-spout" :shuffle} 
-                                      (format-classifications projects) :p 4)
+                                      (format-classifications projects) :p 1)
    "geocode" (bolt-spec {"format-classification" :shuffle}
-                        geocode-event :p 4)
+                        geocode-event :p 1)
    "gendercode" (bolt-spec {"geocode" :shuffle}
-                           gendercode-event :p 4)
+                           gendercode-event :p 1)
    "format-kafka" (bolt-spec {"gendercode" :shuffle}
-                             kafka-format :p 4)
+                             kafka-format :p 1)
    "write-to-kafka" (bolt-spec {"format-kafka" :shuffle} 
-                               (KafkaBolt.) :p 4)
+                               (KafkaBolt.) :p 1)
    "write-to-postgres" (bolt-spec {"gendercode" ["type" "project"]}
-                                  (to-postgres postgres) :p 4)})
+                                  (to-postgres postgres) :p 1)})
 
 (defn event-topology
   [conf]
@@ -61,5 +61,5 @@
      TOPOLOGY-MESSAGE-TIMEOUT-SECS 60
      "kafka.broker.properties"  {"metadata.broker.list" kafka} 
      "topic" "events"
-     TOPOLOGY-MAX-SPOUT-PENDING 400}
+     TOPOLOGY-MAX-SPOUT-PENDING 200}
     (event-topology (merge conf {:client-id name}))))

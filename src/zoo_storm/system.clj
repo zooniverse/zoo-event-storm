@@ -36,10 +36,10 @@
    :workers 1})
 
 (defn create-tables
-  [{:keys [projects topics postgres]}]
+  [{:keys [topics postgres]}]
   (let [db (create-db-connection postgres)]
-    (doseq [pair (cartesian-product topics projects)]
-      (create-table-if-not-exists db (str "events_" (first pair) "_" (last pair))))))
+    (doseq [topic topics]
+      (create-table-if-not-exists db (str "events_" topic)))))
 
 (defn start
   ([system]

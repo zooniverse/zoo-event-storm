@@ -25,13 +25,11 @@
                                       (format-classifications projects) :p 1)
    "geocode" (bolt-spec {"format-classification" :shuffle}
                         geocode-event :p 1)
-   "gendercode" (bolt-spec {"geocode" :shuffle}
-                           gendercode-event :p 1)
-   "format-kafka" (bolt-spec {"gendercode" :shuffle}
+   "format-kafka" (bolt-spec {"geocode" :shuffle}
                              kafka-format :p 1)
    "write-to-kafka" (bolt-spec {"format-kafka" :shuffle} 
                                (KafkaBolt.) :p 1)
-   "write-to-postgres" (bolt-spec {"gendercode" ["type" "project"]}
+   "write-to-postgres" (bolt-spec {"geocode" ["type"]}
                                   (to-postgres postgres) :p 1)})
 
 (defn event-topology

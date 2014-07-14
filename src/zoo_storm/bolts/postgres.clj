@@ -24,7 +24,7 @@
     (bolt
       (execute [{:strs [event type project] :as tuple}]
                (ack! collector tuple)    
-               (let [tbl-name (str "events_" type "_" project)
+               (let [tbl-name (str "events_" type)
                      project-batch (@batch tbl-name)]
                  (swap! batch update-in [tbl-name] conj event)
                  (when (= batch-queue-limit (count project-batch))

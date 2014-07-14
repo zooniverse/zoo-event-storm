@@ -20,7 +20,8 @@
         (p/column :id :bigserial "PRIMARY KEY")
         (p/varchar :user_id 24)
         (p/varchar :user_ip 15)
-        (p/varchar :lang 20)
+        (p/text :lang)
+        (p/text :project)
         (p/text :user_agent)
         (p/text :user_name)
         (p/text :subjects)
@@ -31,9 +32,6 @@
         (p/varchar :city_name 50)
         (p/float :latitude)
         (p/float :longitude)
-        (p/varchar :gender 1)
-        (p/float :male)
-        (p/float :female)
         (pdb/execute :db db))))
 
 (defn- uri-to-db-map

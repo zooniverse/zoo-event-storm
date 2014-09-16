@@ -20,12 +20,13 @@
   [ans]
   (or (get-ans-key ans :agent)
       (get-ans-key ans :user_agent)))
+
 (defn format-timestamp
   [classification]
   (let [format (formatters :date-time-no-ms)] 
-    (parse form (-> (:timestamp classification)
-                    (str/replace  #"\s(UTC|GMT)" "Z")
-                    (str/replace  #"\s" "T")))))
+    (parse format (-> (:timestamp classification)
+                      (str/replace  #"\s(UTC|GMT)" "Z")
+                      (str/replace  #"\s" "T")))))
 
 (defn format-user-name
   [classification]
@@ -54,7 +55,7 @@
     (when (some #{(:project cls)} projects)
       (emit-bolt! collector [{:user_id (format-user-id cls)
                               :user_ip (:user_ip cls)
-                              :subjects (format-subject cls)
+                              :subjects (format-subjects cls)
                               :lang (format-language ans) 
                               :user_agent (get-user-agent ans)
                               :user_name (format-user-name cls)

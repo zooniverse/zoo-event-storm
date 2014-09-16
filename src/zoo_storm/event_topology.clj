@@ -1,7 +1,6 @@
 (ns zoo-storm.event-topology
   (:require [zoo-storm.spouts.kafka :refer [kafka-spout]]
             [zoo-storm.bolts.format-classifications :refer [format-classifications]]
-            [zoo-storm.bolts.gendercode :refer [gendercode-event code-name init-data]]
             [zoo-storm.bolts.geocode :refer [geocode-event]]
             [zoo-storm.bolts.kafka :refer [kafka-format]]
             [zoo-storm.bolts.postgres :refer [to-postgres]]

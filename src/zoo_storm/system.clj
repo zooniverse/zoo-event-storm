@@ -16,6 +16,7 @@
               "cancer_cells"
               "condor"
               "cyclone_center"
+              "chicago"
               "galaxy_zoo" 
               "leaf"
               "m83"

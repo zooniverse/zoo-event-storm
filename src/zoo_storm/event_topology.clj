@@ -9,27 +9,29 @@
            [storm.kafka.bolt KafkaBolt])
   (:gen-class))
 
+(defn uuid [] (str (java.util.UUID/randomUUID)))
+
 (defn gen-spouts
-  [zk client-id m topic]
+  [zk m topic]
   (let [s-name (str topic "-spout")]
-    (assoc m s-name (spout-spec (kafka-spout zk topic (or client-id "local-cluster")) :p 4))))
+    (assoc m s-name (spout-spec (kafka-spout zk topic (uuid)) :p 3))))
 
 (defn topology-spouts
-  [{:keys [topics zookeeper client-id]}] 
-  (reduce (partial gen-spouts zookeeper client-id) {} topics))
+  [{:keys [topics zookeeper]}] 
+  (reduce (partial gen-spouts zookeeper) {} topics))
 
 (defn topology-bolts
   [{:keys [projects postgres topics]}]
   {"format-classification" (bolt-spec {"classifications-spout" :shuffle} 
-                                      (format-classifications projects) :p 4)
+                                      (format-classifications projects) :p 3)
    "geocode" (bolt-spec {"format-classification" :shuffle}
-                        geocode-event :p 4)
+                        geocode-event :p 3)
    "format-kafka" (bolt-spec {"geocode" :shuffle}
-                             kafka-format :p 4)
+                             kafka-format :p 3)
    "write-to-kafka" (bolt-spec {"format-kafka" :shuffle} 
-                               (KafkaBolt.) :p 4)
+                               (KafkaBolt.) :p 3)
    "write-to-postgres" (bolt-spec {"geocode" :shuffle}
-                                  (to-postgres postgres) :p 4)})
+                                  (to-postgres postgres) :p 3)})
 
 (defn event-topology
   [conf]

@@ -10,7 +10,7 @@
   [timestamp]
   (parse (formatters :date-time-no-ms) timestamp))
 
-(defbolt format-talk ["event" "type" "project"] {:params [projects]} [tuple collector]
+(defbolt format-talk ["event" "type" "project"] [tuple collector]
   (let [talk-comment (tuple "json")
         data-fields [:id
                      :focus

@@ -24,9 +24,9 @@
 (defn topology-bolts
   [{:keys [projects postgres topics]}]
   {"format-classification" (bolt-spec {"classifications-spout" :shuffle} 
-                                      (format-classifications projects) :p 3)
+                                      format-classifications :p 3)
    "format-talk" (bolt-spec {"talk_comments-spout" :shuffle}
-                            (format-talk projects) :p 3)
+                            format-talk :p 3)
    "geocode" (bolt-spec {"format-classification" :shuffle}
                         geocode-event :p 3)
    "format-kafka" (bolt-spec {"geocode" :shuffle "format-talk" :shuffle}

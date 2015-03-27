@@ -49,7 +49,7 @@
   [classification]
   (or (:user_id classification) "Not Logged In"))
 
-(defbolt format-classifications ["event" "type" "project"] {:params [projects]} [tuple collector]
+(defbolt format-classifications ["event" "type" "project"] [tuple collector]
   (let [cls (tuple "json")
         ans (:annotations cls)]
     (emit-bolt! collector [{:user_id (format-user-id cls)

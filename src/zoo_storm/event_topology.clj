@@ -1,6 +1,7 @@
 (ns zoo-storm.event-topology
   (:require [zoo-storm.spouts.kafka :refer [kafka-spout]]
             [zoo-storm.bolts.format-classifications :refer [format-classifications]]
+            [zoo-storm.bolts.format-talk :refer [format-talk]]
             [zoo-storm.bolts.geocode :refer [geocode-event]]
             [zoo-storm.bolts.kafka :refer [kafka-format]]
             [zoo-storm.bolts.postgres :refer [to-postgres]]
@@ -26,20 +27,20 @@
                                       (format-classifications projects) :p 3)
    "format-talk" (bolt-spec {"talk_comments-spout" :shuffle}
                             (format-talk projects) :p 3)
-   "geocode" (bolt-spec {["format-talk", "format-classification"] :shuffle}
+   "geocode" (bolt-spec {"format-classification" :shuffle}
                         geocode-event :p 3)
-   "format-kafka" (bolt-spec {"geocode" :shuffle}
+   "format-kafka" (bolt-spec {"geocode" :shuffle "format-talk" :shuffle}
                              kafka-format :p 3)
    "write-to-kafka" (bolt-spec {"format-kafka" :shuffle} 
                                (KafkaBolt.) :p 3)
-   "write-to-postgres" (bolt-spec {"geocode" :shuffle}
+   "write-to-postgres" (bolt-spec {"geocode" :shuffle "format-talk" :shuffle}
                                   (to-postgres postgres) :p 3)})
 
 (defn event-topology
   [conf]
   (topology
-    (topology-spouts conf)
-    (topology-bolts conf)))
+   (topology-spouts conf)
+   (topology-bolts conf)))
 
 (defn run-local! 
   [{:keys [kafka debug workers] :as conf}]
@@ -56,11 +57,11 @@
 (defn submit-topology! 
   [{:keys [kafka debug workers] :as conf} name]
   (StormSubmitter/submitTopology
-    name
-    {TOPOLOGY-DEBUG false
-     TOPOLOGY-WORKERS workers
-     TOPOLOGY-MESSAGE-TIMEOUT-SECS 60
-     "kafka.broker.properties"  {"metadata.broker.list" kafka} 
-     "topic" "events"
-     TOPOLOGY-MAX-SPOUT-PENDING 200}
-    (event-topology (merge conf {:client-id name}))))
+   name
+   {TOPOLOGY-DEBUG false
+    TOPOLOGY-WORKERS workers
+    TOPOLOGY-MESSAGE-TIMEOUT-SECS 60
+    "kafka.broker.properties"  {"metadata.broker.list" kafka} 
+    "topic" "events"
+    TOPOLOGY-MAX-SPOUT-PENDING 200}
+   (event-topology (merge conf {:client-id name}))))

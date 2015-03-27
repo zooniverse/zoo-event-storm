@@ -12,7 +12,7 @@
 
 (defn -getOutputFields
   [_]
-  (Fields. ["classification"]))
+  (Fields. ["json"]))
 
 (defn new-json-scheme
   []

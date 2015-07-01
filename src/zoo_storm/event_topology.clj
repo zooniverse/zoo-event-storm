@@ -18,15 +18,17 @@
     (assoc m s-name (spout-spec (kafka-spout zk topic (uuid)) :p 3))))
 
 (defn topology-spouts
-  [{:keys [topics zookeeper]}] 
+  [{:keys [topics zookeeper]}]
   (reduce (partial gen-spouts zookeeper) {} topics))
 
 (defn topology-bolts
   [{:keys [projects postgres topics]}]
-  {"format-classification" (bolt-spec {"classifications-spout" :shuffle} 
-                                      format-classifications :p 3)
+  {"format-classification" (bolt-spec {"classifications-spout" :shuffle}
+                                      (format-classifications "classifications") :p 3)
    "format-talk" (bolt-spec {"talk_comments-spout" :shuffle}
                             format-talk :p 3)
+   "format-classification-staging" (bolt-spec {"classifications-staging-spout" :shuffle}
+                                      (format-classifications "classifications-staging") :p 3)
    "geocode" (bolt-spec {"format-classification" :shuffle}
                         geocode-event :p 3)
    "format-kafka" (bolt-spec {"geocode" :shuffle "format-talk" :shuffle}

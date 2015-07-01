@@ -9,7 +9,7 @@
   {:zookeeper ""
    :postgres "" 
    :kafka ""
-   :topics ["classifications" "talk_comments"]
+   :topics ["classifications" "talk_comments" "classifications-staging"]
    :debug true
    :workers 1})
 

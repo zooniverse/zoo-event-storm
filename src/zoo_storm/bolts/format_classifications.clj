@@ -36,10 +36,10 @@
   [annotations]
   (let [lang (get-ans-key annotations :lang)]
     (cond
-     (= "$DEFAULT" lang) "en-US"
-     (= (count lang) 5) lang
-     (= (count lang) 2) lang
-     true "Unknown")))
+      (= "$DEFAULT" lang) "en-US"
+      (= (count lang) 5) lang
+      (= (count lang) 2) lang
+      true "Unknown")))
 
 (defn format-subjects
   [classification]
@@ -49,19 +49,22 @@
   [classification]
   (or (:user_id classification) "Not Logged In"))
 
-(defbolt format-classifications ["event" "type" "project"] [tuple collector]
-  (let [cls (tuple "json")
-        ans (:annotations cls)]
-    (emit-bolt! collector [{:user_id (format-user-id cls)
-                            :user_ip (:user_ip cls)
-                            :subjects (format-subjects cls)
-                            :lang (format-language ans) 
-                            :user_agent (get-user-agent ans)
-                            :user_name (format-user-name cls)
-                            :data (filter to-annotation ans) 
-                            :created_at (format-timestamp cls)
-                            :project (:project cls)} 
-                           "classifications"
-                           (:project cls)]
-                :anchor tuple)
-    (ack! collector tuple)))
+(defbolt format-classifications ["event" "type" "project"] {:params [type] :prepare true}
+  [conf context collector]
+  (bolt
+   (execute
+    (let [cls (tuple "json")
+          ans (:annotations cls)]
+      (emit-bolt! collector [{:user_id (format-user-id cls)
+                              :user_ip (:user_ip cls)
+                              :subjects (format-subjects cls)
+                              :lang (format-language ans) 
+                              :user_agent (get-user-agent ans)
+                              :user_name (format-user-name cls)
+                              :data (filter to-annotation ans) 
+                              :created_at (format-timestamp cls)
+                              :project (:project cls)}
+                             type
+                             (:project cls)]
+                  :anchor tuple)
+      (ack! collector tuple)))))
